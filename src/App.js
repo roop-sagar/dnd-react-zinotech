@@ -35,22 +35,38 @@ const App = () => {
     setBlacks([...blacks]);
   }
  
-  const dragstart =(e,data,i) =>{
-    e.dataTransfer.setData('data',data);
-    e.dataTransfer.setData('delIndex',i);
+  const dragstart =(e,data,stack,i) =>{
+    e.dataTransfer.setData('data', data);
+    e.dataTransfer.setData('dragStack', stack);
+    e.dataTransfer.setData('oldStackIndex',i);
+    stack.splice(i,1);
+    console.log(stack);
   }
-  const drop =(e,stack)=>{
-    let data = e.dataTransfer.getData('data');
-    let delIndex = e.dataTransfer.getData('delIndex');
-    let setIndex = e.dataTransfer.getData('setIndex')
-    stack.splice(setIndex,0,data)
-    stack.splice(delIndex,1);
-    console.log(stack)
+  const drop =(e,stack,fn)=>{
+    console.log(fn);
+    e.preventDefault();
+    let data=e.dataTransfer.getData('data');
+    let oldStack = e.dataTransfer.getData('dragStack');
+    let oldStackIndex = e.dataTransfer.getData('oldStackIndex');
+    if(stack.length<8){
+      stack.splice(e.target.id,0,data)
+    } else {
+      oldStack.splice(oldStackIndex,0,data)
+      alert('stack limit exceeded')
+    }
     setReds([...reds]);
+    setBlues([...blues]);
+    setGreens([...greens]);
+    setBlacks([...blacks]);
+    console.log(stack);
   }
   const dragover =(e,index) =>{
     e.preventDefault();
-    e.dataTransfer.setData('setIndex',index)
+    console.log(e.target);
+    setReds([...reds]);
+    setBlues([...blues]);
+    setGreens([...greens]);
+    setBlacks([...blacks]);
   }
 
   return (
@@ -58,10 +74,10 @@ const App = () => {
       <div className="red stack">
         Red
         <button onClick={() => add(reds)}>Add</button>
-        <div className="list" onDrop={(e)=>drop(e,reds)} onDragOver={(e)=>dragover(e)} >
+        <div className="list" id="reds" onDrop={(e)=>drop(e,reds,(didDrop)=>{console.log(didDrop)})} onDragOver={(e)=>dragover(e)} >
           {reds.map((red, i) => {
             return (
-              <div className="drag-content" key={i} draggable onDragStart={(e)=>dragstart(e,red,i)} onDragOver={(e)=>dragover(e,i)} >
+              <div className="drag-content" key={i} id={i} draggable onDragStart={(e)=>dragstart(e,red,reds,i)}>
                 <input value={reds[i]} name={i.toString()} onChange={(e)=>change(e,reds)}  />
                 <div className="close" onClick={() => remove(reds, i)}>
                   X
@@ -75,10 +91,10 @@ const App = () => {
       <div className="blue stack">
         Blue
         <button onClick={() => add(blues)}>Add</button>
-        <div className="list">
+        <div className="list" id="blue" onDrop={(e)=>drop(e,blues)} onDragOver={(e)=>dragover(e)} >
           {blues.map((blue, i) => {
             return (
-              <div className="drag-content" key={i} draggable>
+              <div className="drag-content" key={i} id={i} draggable onDragStart={(e)=>dragstart(e,blue,blues,i)}>
               <input value={blues[i]} name={i.toString()} onChange={(e)=>change(e,blues)}  />
                 <div className="close" onClick={() => remove(blues, i)}>X</div>
               </div>
